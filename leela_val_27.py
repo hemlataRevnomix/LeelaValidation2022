@@ -2,7 +2,7 @@ import os
 import file_check as fc
 import pandas as pd
 
-from datetime import datetime,timedelta,date
+from datetime import datetime,date
 
 today1 = date.today()
 d1 = today1.strftime("%Y-%m-%d")
@@ -10,7 +10,7 @@ xDate = d1
 basepath = r'C:\ftp'
 inpath = basepath + r'\email_data/'+d1
 outputPath = r'C:\Chakradhar\hemlata\Validation project\leela\Validation Reports'
-htl_list=['blr','chn','mum','ggn','goa','lach','lbc','tlgn','tlpj','tlpnd','udp']
+htl_list=['blr','chn','ggn','goa','lach','lbc','tlpnd','tlpj','udp','tlgn','mum']
 today = datetime.today().date()
 xDate = str(today)
 
@@ -19,15 +19,15 @@ reports = ["Financial", "Group", "Reservation_Future","Reservation_Hist"]
 os.chdir(outputPath)
 
 try:
-    os.mkdir(outputPath)
+    os.mkdir(outputPath+"\\"+d1)
 except FileExistsError:
     pass
 
 for cl_htl in htl_list:
 
     for lst in os.listdir(inpath):
-        file = open(outputPath + '/ ' + '{}_File Validation.txt'.
-                    format(cl_htl), "w")
+        file = open(outputPath + "\\" +d1+"\\"+ '{}_File Validation.txt'.
+                    format(cl_htl), "a")
         for report in reports:
             if lst.lower().__contains__(f'leela{cl_htl}_Daily_{report}'.lower()):
                 fin = inpath + "\\" + lst
@@ -50,7 +50,7 @@ for cl_htl in htl_list:
     # except:
     #     pass
 
-                findf=fc.fileCheck(fin,report,file,xDate, cl_htl)
+                findf=fc.fileCheck(fin,report,file,xDate,cl_htl)
                 print(f"{cl_htl} {report} file Checked")
             # grpdf=fc.fileCheck(grp,'Group',file,xDate)
             # print("{} group file Checked".format(cl_htl))

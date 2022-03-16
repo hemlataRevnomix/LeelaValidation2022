@@ -1,13 +1,15 @@
 import pandas as pd
 from datetime import datetime,timedelta
+import warnings
+warnings.filterwarnings("ignore")
 
 def fileCheck(filename,fltype,file,xDate, cl_htl):
     if filename != None:
         if fltype == 'Financial':
             try:
-                df_pipefile = pd.read_csv(filename, sep="|" , index_col=False, on_bad_lines='skip',  encoding="utf-8")
+                df_pipefile = pd.read_csv(filename, sep="|" , index_col=False,  error_bad_lines=False,  encoding="utf-8")
             except:
-                df_pipefile = pd.read_csv(filename, sep="|" , index_col=False,  on_bad_lines='skip',encoding="utf-8")
+                df_pipefile = pd.read_csv(filename, sep="|" , index_col=False,   error_bad_lines=False,encoding="utf-8")
 
             file.write("\nFile Name:{}".format(filename))
             file.write("\nFile Type:{}".format(fltype))
@@ -17,7 +19,9 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
             if colnum == 1:
                 file.write('\n=============================================================================\n')
                 file.write("\n### Plz Check {} file is NOT in pipe Separated ###\n".format(filename))
+
                 file.write('\n==============================================================================\n')
+                print("\n### Plz Check {} file is NOT in pipe Separated ###\n".format(filename))
                 return ('NA')
             else:
                 file.write("\n {} : Pipe Separated and has {} columns ".format(fltype,colnum))
@@ -30,7 +34,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                 file.write("\nAll Columns are present in file\n")
             else:
                 a = set(std_col).difference(set(fileCols))
-                file.write("\nAll Columns are  Not in financial file {}\n".format(a))
+                file.write("\nAll Columns are  Not in financial file {}\t filename:{}\n".format(a,filename))
                 file.write("\nNew Columns are  found in financial file {}\n".format(a))
 
             # file.write(str(filename))
@@ -43,7 +47,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                     except ValueError:
                         pass
             try:
-                df_pipefile['TRX_DATE'] = pd.to_datetime( df_pipefile['TRX_DATE'], format='%d-%b-%y')
+                df_pipefile['TRX_DATE'] = pd.to_datetime(df_pipefile['TRX_DATE'], format='%d-%b-%y')
 
                 date1 = df_pipefile['TRX_DATE'].min().strftime('%d-%b-%y')
                 date2 = df_pipefile['TRX_DATE'].max().strftime('%d-%b-%y')
@@ -64,7 +68,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                 #
                 # else:
                 #     file.write("\n   max date:{} | Status:Failed* | Expected: max date  {}".format(maxdate,valdate2))
-                #
+
 
 
                 file.write("\n Date Range:From {} to {} ".format(date1, date2))
@@ -88,20 +92,19 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                 oo_sum = df_pipefile['OO'].sum()
                 l_sum = df_pipefile['L'].sum()
                 ll_sum = df_pipefile['LL'].sum()
-                if pd.to_numeric(f_sum, errors='coerce').all() == True:
-                    file.write("\n Sum of F column:{}".format(f_sum))
-                elif pd.to_numeric(ff_sum, errors='coerce').all() == True:
-                    file.write("\n Sum of FF column:{}".format(ff_sum))
-                elif pd.to_numeric(o_sum, errors='coerce').all() == True:
-                    file.write("\n Sum of o column:{}".format(o_sum))
-                elif pd.to_numeric(oo_sum, errors='coerce').all() == True:
-                    file.write("\n Sum of oo column:{}".format(oo_sum))
-                elif pd.to_numeric(l_sum, errors='coerce').all() == True:
-                    file.write("\n Sum of l column:{}".format(l_sum))
-                elif pd.to_numeric(ll_sum, errors='coerce').all() == True:
-                    file.write("\n Sum of ll column:{}".format(ll_sum))
-                else:
-                    pass
+
+                file.write("\n Sum of F column:{}".format(float(f_sum)))
+
+                file.write("\n Sum of FF column:{}".format(ff_sum))
+
+                file.write("\n Sum of o column:{}".format(o_sum))
+
+                file.write("\n Sum of oo column:{}".format(oo_sum))
+
+                file.write("\n Sum of l column:{}".format(l_sum))
+
+                file.write("\n Sum of ll column:{}".format(ll_sum))
+
 
                 # file.write("\n financial numeric colums sum")
                 #
@@ -125,7 +128,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
 
             # mapfile = pd.read_excel(r"C:\Chakradhar\hemlata\Validation project\leela\mapfiles\Leela_LOF_For_Finance.xlsx")
             # my_type = dict(zip(mapfile.Rep_Fields, mapfile.data_type))
-
+            #
             # dtypes1 = df_pipefile.dtypes.to_dict()
             #
             # for key in my_type.items():
@@ -134,15 +137,14 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
             #     else:
             #         print("This datatypes are not work properly",my_type[key])
 
-            #
-            # a=df_pipefile.select_dtypes(include='number').columns.tolist()
-            # print(a)
+            a=df_pipefile.select_dtypes(include='number').columns.tolist()
+            print(a)
             file.write("\n==============================================================================")
-        elif fltype == 'Reservation_Hist': ## Changed by AR 29 Jan2021
+        elif fltype == 'history_reservation': ## Changed by AR 29 Jan2021
             try:
-                df_Reh = pd.read_csv(filename, sep="|", index_col=False, on_bad_lines='skip',  encoding="utf-8")
+                df_Reh = pd.read_csv(filename, sep="|", index_col=False,  error_bad_lines=False,  encoding="utf-8")
             except:
-                df_Reh = pd.read_csv(filename, sep="|", index_col=False, on_bad_lines='skip',  encoding="utf-8")
+                df_Reh = pd.read_csv(filename, sep="|", index_col=False,  error_bad_lines=False,  encoding="utf-8")
 
             colnum = df_Reh.shape[1]
             maxrows = df_Reh.shape[0]
@@ -152,6 +154,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                 'RESV_STATUS','CANCELLATION_DATE','ROOM_CLASS','ROOM_CATEGORY','BOOKED_ROOM_CATEGORY','NIGHTS','NO_OF_ROOMS','ADULTS','CURRENCY_CODE','RATE_CODE',
                 'SHARE_ID','SHARED_YN','MARKET_CODE','COMPANY_NAME','COMPANY_ID','TRAVEL_AGENT_NAME','TRAVEL_AGENT_ID','GUEST_COUNTRY','NATIONALITY','CHANNEL','ORIGIN_OF_BOOKING',
                 'SOURCE_ID','SOURCE_NAME']
+
             fileCols = (list( df_Reh.columns))
 
             file.write("\nFile Name:{}".format(filename))
@@ -162,6 +165,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                 file.write('\n=============================================================================\n')
                 file.write("\n### Plz Check {} file is NOT in pipe Separated ###\n".format(filename))
                 file.write('\n=============================================================================\n')
+                print("\n### Plz Check {} file is NOT in pipe Separated ###\n".format(filename))
                 return ('NA')
 
             else:
@@ -173,7 +177,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                 file.write("\nAll Columns are present in Reservation_History file\n")
             else:
                 a = set(std_col).difference(set(fileCols))
-                file.write("\nAll Columns are NOT in Reservation_History file{}\n".format(a))
+                file.write("\nAll Columns are NOT in Reservation_History file{} \t filename:{}\n".format(a,filename))
                 file.write("\nNew Columns Found in Reservation_History file{}\n".format(a))
 
             file.write('\n max_row count of dataframe:{}'.format(str(maxrows)))
@@ -238,9 +242,9 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
 
         elif fltype == 'Reservation_Future':
             try:
-                df_Resf = pd.read_csv(filename, sep="|", index_col=False,  on_bad_lines='skip',encoding="utf-8")
+                df_Resf = pd.read_csv(filename, sep="|", index_col=False,   error_bad_lines=False,encoding="utf-8")
             except:
-                df_Resf = pd.read_csv(filename, sep="|", index_col=False,  on_bad_lines='skip',encoding="utf-8")
+                df_Resf = pd.read_csv(filename, sep="|", index_col=False,   error_bad_lines=False,encoding="utf-8")
 
             file.write('\nFile name :{}'.format(str(filename)))
             file.write('\nFile type :{}'.format(fltype))
@@ -251,6 +255,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                 file.write('\n=============================================================================\n')
                 file.write("\n### Plz Check {} file is NOT in pipe Separated ###\n".format(filename))
                 file.write('\n=============================================================================\n')
+                print("\n### Plz Check {} file is NOT in pipe Separated ###\n".format(filename))
                 return ('NA')
             else:
                 file.write(" \n{} : Pipe Separated and has {} columns ".format(fltype,colnum))
@@ -272,7 +277,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                 file.write("\nAll Columns are present in Reservation_Future file\n")
             else:
                 a = set(std_col).difference(set(fileCols))
-                file.write("\nAll Columns are  NOT in Reservation_Future file {}\n".format(a))
+                file.write("\nAll Columns are  NOT in Reservation_Future file {} \t filename:{}\n".format(a,filename))
                 file.write("\nNew Columns are  Found in Reservation_Future file {}\n".format(a))
 
 
@@ -355,16 +360,16 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                 file.write("\n all ms code are present")
             else:
                 a = set(ms_code_file).difference(set(ms_code))
-                file.write("\nAll mscode are NOT in reservation future file {}\n".format(a))
+
                 file.write("\nNew mscode are Found in reservation future file {}\n".format(a))
 
             file.write("\n==============================================================================")
 
         elif fltype == 'Group':
             try:
-                df_gu = pd.read_csv(filename, sep="|", index_col=False,  on_bad_lines='skip', encoding="utf-8")
+                df_gu = pd.read_csv(filename, sep="|", index_col=False,   error_bad_lines=False, encoding="utf-8")
             except:
-                df_gu = pd.read_csv(filename, sep="|", index_col=False,  on_bad_lines='skip', encoding="utf-8")
+                df_gu = pd.read_csv(filename, sep="|", index_col=False,   error_bad_lines=False, encoding="utf-8")
             colnum = df_gu.shape[1]
             maxrows = df_gu.shape[0]
 
@@ -381,6 +386,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                 file.write('\n ============================================================================= \n')
                 file.write("\n### Plz Check {} file is NOT in pipe Separated ###\n".format(filename))
                 file.write('\n ============================================================================= \n')
+                print("\n### Plz Check {} file is NOT in pipe Separated ###\n".format(filename))
                 return ('NA')
             else:
                 file.write(" \n {} : Pipe Separated and has {} columns ".format(fltype,colnum))
@@ -389,7 +395,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
                 file.write("\nAll Columns are present in group file\n")
             else:
                 a = set(std_col).difference(set(fileCols))
-                file.write("\nAll Columns are  NOT in group file {}\n".format(a))
+                file.write("\nAll Columns are  NOT in group file {} \t filename:{}\n".format(a,filename))
                 file.write("\nNew Columns are  Found in group file {}\n".format(a))
 
 
@@ -451,7 +457,7 @@ def fileCheck(filename,fltype,file,xDate, cl_htl):
         else:
             pass
     else:
-        file.write(f"\n#########{fltype} not received for {cl_htl}#######\n")
+        print(f"\n#########{fltype} not received for {cl_htl}#######\n")
         file.write("\n==============================================================================")
     return file
 
